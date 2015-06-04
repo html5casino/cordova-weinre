@@ -19,6 +19,8 @@
 
 _ = require 'underscore'
 
+http           = require 'https'
+
 utils          = require './utils'
 Channel        = require './Channel'
 channelManager = require './channelManager'
@@ -98,6 +100,18 @@ module.exports = utils.registerClass class HttpChannelHandler
 handleCreate = (pathPrefix, isClient, request, response) ->
     id = request.body?.id
     
+    options = { 
+        host: 'build.phonegap.com',
+        path: '/api/v1/weinre/'+id,
+        method: 'GET',
+        headers: { 'Authorization' : 'Token token="' + process.env.AUTH_TOKEN + '"' }
+    }
+
+    req = http.get options, (res) ->
+        utils.logVerbose 'OKAPI AUTH CALL:' + res.statusCode
+    req.on 'error', (err) ->
+        utils.logVerbose 'OKAPI AUTH CALL ERROR:' + err
+
     remoteAddress = request.connection?.remoteAddress || ""
     
     channel = new Channel(pathPrefix, id, remoteAddress, isClient)
